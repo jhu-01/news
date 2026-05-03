@@ -1,0 +1,28 @@
+import { PressWordmarkProps } from '@/types/press';
+
+export const PRESS_LIST: PressWordmarkProps[] = [
+  { name: '연합뉴스', color: '#14212B', weight: 'bold' },
+  { name: '아시아경제', color: '#00427d', flag: '경제', fontFamily: 'serif', italic: true },
+  { name: '디스패치', color: '#ffea00', bg: '#000000', weight: 900, tracking: '-1px' },
+  { name: '한겨레', color: '#00845f', fontFamily: 'serif', underline: true },
+  { name: '중앙일보', color: '#e60012', weight: 'bold' },
+  { name: '조선일보', color: '#000000', fontFamily: 'serif', weight: 'bold' },
+  { name: '동아일보', color: '#004a95', weight: 'bold' },
+  { name: '경향신문', color: '#d32f2f', weight: 'bold' },
+  { name: '한국일보', color: '#006db0', weight: 'bold' },
+  { name: '서울신문', color: '#000000', weight: 'bold' },
+  { name: '매일경제', color: '#000000', weight: 'bold', tracking: '-1px' },
+  { name: '한국경제', color: '#1e3a8a', weight: 'bold', italic: true },
+  { name: 'JTBC', color: '#ec1c24', weight: 900 },
+  { name: 'MBC', color: '#000000', weight: 'bold' },
+  { name: 'KBS', color: '#005bac', weight: 'bold' },
+  { name: 'SBS', color: '#000000', weight: 'bold' },
+  { name: 'MBN', color: '#000000', weight: 'bold' },
+  { name: 'TV조선', color: '#ed1c24', weight: 'bold' },
+  { name: '채널A', color: '#00a0e9', weight: 'bold' },
+  { name: 'YTN', color: '#003399', weight: 'bold' },
+  { name: '연합뉴스TV', color: '#e60012', weight: 'bold' },
+  { name: '머니투데이', color: '#000000', weight: 'bold', flag: '경제' },
+  { name: '헤럴드경제', color: '#008000', weight: 'bold', flag: '경제' },
+  { name: '파이낸셜뉴스', color: '#000000', weight: 'bold', fontFamily: 'serif' },
+];
