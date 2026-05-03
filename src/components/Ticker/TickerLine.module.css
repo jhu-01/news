@@ -1,0 +1,30 @@
+.lineWrapper {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-soft);
+  border: 1px solid var(--color-line);
+  height: 38px;
+  padding: 0 16px;
+  flex: 1;
+  gap: 16px;
+}
+
+.pressName {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--color-ink);
+  flex-shrink: 0;
+}
+
+.newsTitle {
+  font-size: 14px;
+  color: var(--color-sub);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.newsTitle:hover {
+  text-decoration: underline;
+}
