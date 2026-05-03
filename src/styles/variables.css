@@ -18,6 +18,9 @@
   --base-unit: 8px;
   --max-width: 1280px;
   --content-width: 930px;
+
+  /* Animation */
+  --ticker-transition-duration: 0.55s;
 }
 
 * {
