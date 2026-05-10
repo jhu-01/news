@@ -15,6 +15,11 @@
   --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
   --font-serif: 'Noto Serif KR', serif;
+  --font-size-display: 24px; /* 헤더 로고 */
+  --font-size-heading: 16px; /* 활성 탭, 기사 제목 */
+  --font-size-body: 16px;    /* 비활성 탭, 날짜 */
+  --font-size-list-item: 14px; /* 기사 리스트 */
+  --font-size-caption: 12px; /* 구독 버튼, 배지 숫자 */
 
   /* Wordmark Specific Tokens (Magic Numbers to Variables) */
   --font-weight-bold: 700;
@@ -41,6 +46,7 @@
   --content-width: 930px;
 
   /* Animation */
+  --animation-sparkle-duration: 3s;
   --ticker-transition-duration: 0.55s;
 }
 

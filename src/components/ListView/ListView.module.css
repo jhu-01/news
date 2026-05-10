@@ -2,14 +2,14 @@
   background-color: var(--color-card);
   border: 1px solid var(--color-line);
   width: 100%;
-  min-height: 400px;
+  min-height: calc(var(--base-unit) * 50); /* 400px */
   display: flex;
   flex-direction: column;
 }
 
 .categoryNav {
   display: flex;
-  height: 40px;
+  height: calc(var(--base-unit) * 5); /* 40px */
   background-color: var(--color-soft);
   border-bottom: 1px solid var(--color-line);
   width: 100%;
@@ -19,4 +19,12 @@
   padding: var(--space-24);
   flex: 1;
   display: flex;
+}
+
+.empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-mute);
 }

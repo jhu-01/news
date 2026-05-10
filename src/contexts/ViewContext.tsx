@@ -6,8 +6,11 @@ type TabMode = 'all' | 'subs';
 interface ViewContextType {
   viewMode: ViewMode;
   tabMode: TabMode;
+  currentCategoryIndex: number;
+  currentPressIndex: number;
   setViewMode: (mode: ViewMode) => void;
   setTabMode: (mode: TabMode) => void;
+  setNavigation: (catIdx: number, pressIdx: number) => void;
   resetNavigation: () => void;
 }
 
@@ -16,9 +19,17 @@ const ViewContext = createContext<ViewContextType | undefined>(undefined);
 export const ViewProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [tabMode, setTabMode] = useState<TabMode>('all');
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+  const [currentPressIndex, setCurrentPressIndex] = useState(0);
+
+  const setNavigation = (catIdx: number, pressIdx: number) => {
+    setCurrentCategoryIndex(catIdx);
+    setCurrentPressIndex(pressIdx);
+  };
 
   const resetNavigation = () => {
-    // 향후 페이지 번호나 카테고리 인덱스 초기화 시 사용
+    setCurrentCategoryIndex(0);
+    setCurrentPressIndex(0);
   };
 
   return (
@@ -26,8 +37,11 @@ export const ViewProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{ 
         viewMode, 
         tabMode, 
+        currentCategoryIndex,
+        currentPressIndex,
         setViewMode, 
         setTabMode, 
+        setNavigation,
         resetNavigation 
       }}
     >

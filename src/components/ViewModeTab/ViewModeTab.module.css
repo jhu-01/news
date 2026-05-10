@@ -11,7 +11,7 @@
 }
 
 .tab {
-  font-size: 16px;
+  font-size: var(--font-size-body); /* design.md: body */
   font-family: var(--font-main);
   color: var(--color-mute);
   background: none;
