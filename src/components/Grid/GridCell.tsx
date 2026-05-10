@@ -3,14 +3,21 @@ import styles from './GridCell.module.css';
 import PressWordmark from '@/components/common/PressWordmark/PressWordmark';
 import Button from '@/components/common/Button/Button';
 import { PressWordmarkProps } from '@/types/press';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 
 const GridCell: React.FC<PressWordmarkProps> = (props) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { isSubscribed, subscribe, unsubscribe } = useSubscription();
+
+  const subscribed = isSubscribed(props.name);
 
   const handleSubscribe = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: 구독 로직 추가 예정
-    console.log(`${props.name} 구독 클릭`);
+    if (subscribed) {
+      unsubscribe(props.name);
+    } else {
+      subscribe(props.name);
+    }
   };
 
   return (
@@ -20,7 +27,10 @@ const GridCell: React.FC<PressWordmarkProps> = (props) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {isHovered ? (
-        <Button text="구독하기" onClick={handleSubscribe} />
+        <Button 
+          text={subscribed ? "해지하기" : "구독하기"} 
+          onClick={handleSubscribe} 
+        />
       ) : (
         <PressWordmark {...props} />
       )}
