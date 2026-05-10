@@ -1,0 +1,22 @@
+.listViewContainer {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-line);
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.categoryNav {
+  display: flex;
+  height: 40px;
+  background-color: var(--color-soft);
+  border-bottom: 1px solid var(--color-line);
+  width: 100%;
+}
+
+.contentArea {
+  padding: var(--space-24);
+  flex: 1;
+  display: flex;
+}

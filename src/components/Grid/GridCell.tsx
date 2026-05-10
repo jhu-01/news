@@ -3,7 +3,7 @@ import styles from './GridCell.module.css';
 import PressWordmark from '@/components/common/PressWordmark/PressWordmark';
 import Button from '@/components/common/Button/Button';
 import { PressWordmarkProps } from '@/types/press';
-import { useSubscription } from '../../contexts/SubscriptionContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 const GridCell: React.FC<PressWordmarkProps> = (props) => {
   const [isHovered, setIsHovered] = useState(false);
