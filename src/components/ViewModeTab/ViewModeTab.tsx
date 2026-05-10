@@ -1,9 +1,11 @@
 import React from 'react';
 import { useView } from '@/contexts/ViewContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import styles from './ViewModeTab.module.css';
 
 const ViewModeTab: React.FC = () => {
   const { viewMode, setViewMode, tabMode, setTabMode } = useView();
+  const { subscribedIds } = useSubscription();
 
   return (
     <div className={styles.container}>
@@ -18,7 +20,7 @@ const ViewModeTab: React.FC = () => {
           className={`${styles.tab} ${tabMode === 'subs' ? styles.active : ''}`}
           onClick={() => setTabMode('subs')}
         >
-          내가 구독한 언론사
+          {`내가 구독한 언론사(${subscribedIds.length})`}
         </button>
       </div>
       

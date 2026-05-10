@@ -1,8 +1,9 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import styles from './ListView.module.css';
 import CategoryTabList from './CategoryTab/CategoryTabList';
 import PressArticleContent from './PressArticle/PressArticleContent';
 import { useView } from '@/contexts/ViewContext';
+import ChevronIcon from '@/assets/ChevronIcon'; // Import ChevronIcon
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { CATEGORIES, LISTVIEW_TIMER_DURATION } from '@/constants/newsData';
 import { useTimer } from '@/hooks/useTimer';
@@ -18,6 +19,7 @@ const ListView: React.FC = () => {
     setCurrentTabPageIndex // New: Get setter for tab page index
   } = useView();
   const { subscribedIds } = useSubscription();
+  const [isPaused, setIsPaused] = useState(false);
 
   // 전체 언론사 데이터를 평탄화하고 중복된 언론사를 제거함
   const allPressData = useMemo(() => {
@@ -60,9 +62,10 @@ const ListView: React.FC = () => {
     if (tabMode === 'subs' && currentPressIndex >= currentDataList.length && currentDataList.length > 0) {
       setNavigation(0, currentDataList.length - 1);
     } else if (tabMode === 'subs' && currentDataList.length === 0) {
-      // 구독 언론사가 없는데 subs 모드일 경우, 인덱스 초기화
+      // 구독 언론사가 0명이 되면 자동으로 '전체 언론사' 탭으로 이동
       setNavigation(0, 0);
       setCurrentTabPageIndex(0);
+      useView().setTabMode('all'); 
     } else if (tabMode === 'subs' && currentPressIndex < 0 && currentDataList.length > 0) {
       setNavigation(0, 0); // 인덱스가 음수가 되는 경우 방지
     }
@@ -106,10 +109,26 @@ const ListView: React.FC = () => {
     }
   };
 
+  const isPrevDisabled = useMemo(() => {
+    if (tabMode === 'all') {
+      return currentPressIndex === 0 && currentCategoryIndex === 0;
+    } else { // tabMode === 'subs'
+      return currentPressIndex === 0;
+    }
+  }, [currentPressIndex, currentCategoryIndex, tabMode]);
+
+  const isNextDisabled = useMemo(() => {
+    if (tabMode === 'all') {
+      return currentPressIndex === currentDataList.length - 1 && currentCategoryIndex === CATEGORIES.length - 1;
+    } else { // tabMode === 'subs'
+      return currentPressIndex === currentDataList.length - 1;
+    }
+  }, [currentPressIndex, currentDataList.length, currentCategoryIndex, tabMode]);
+
   const { progress, reset } = useTimer({
     duration: LISTVIEW_TIMER_DURATION,
     onFinished: handleNext,
-    isActive: viewMode === 'list' && currentDataList.length > 0
+    isActive: viewMode === 'list' && currentDataList.length > 0 && !isNextDisabled && !isPaused
   });
 
   // 언론사가 바뀌거나(구독/해지 포함) 네비게이션이 일어날 때 타이머를 리셋하여 자연스러운 흐름 제공
@@ -119,15 +138,13 @@ const ListView: React.FC = () => {
 
   return (
     <div className={styles.wrapper}>
-      <button 
-        className={`${styles.sideButton} ${styles.left}`} 
+      <button
+        className={`${styles.navButton} ${styles.left} ${isPrevDisabled ? styles.disabled : ''}`}
         onClick={handlePrev}
         aria-label="이전 페이지"
+        disabled={isPrevDisabled}
       >
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M24 28L16 20L24 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="20" cy="20" r="19.5" stroke="var(--color-line)"/>
-        </svg>
+        <ChevronIcon direction="left" color={isPrevDisabled ? 'var(--color-mute)' : 'var(--color-sub)'} />
       </button>
 
       <div className={styles.listViewContainer}>
@@ -142,7 +159,11 @@ const ListView: React.FC = () => {
           />
         </nav>
         
-        <article className={styles.contentArea}>
+        <article 
+          className={styles.contentArea}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
           {tabMode === 'subs' && subscribedPressList.length === 0 ? (
             <div className={styles.empty}>구독한 언론사가 없습니다.</div>
           ) : currentPress ? (
@@ -154,14 +175,12 @@ const ListView: React.FC = () => {
       </div>
 
       <button 
-        className={`${styles.sideButton} ${styles.right}`} 
+        className={`${styles.navButton} ${styles.right} ${isNextDisabled ? styles.disabled : ''}`}
         onClick={handleNext}
         aria-label="다음 페이지"
+        disabled={isNextDisabled}
       >
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M16 28L24 20L16 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="20" cy="20" r="19.5" stroke="var(--color-line)"/>
-        </svg>
+        <ChevronIcon direction="right" color={isNextDisabled ? 'var(--color-mute)' : 'var(--color-sub)'} />
       </button>
     </div>
   );

@@ -6,7 +6,7 @@
   width: 100%;
 }
 
-.sideButton {
+.navButton { /* Renamed from .sideButton for consistency with GridView */
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -20,6 +20,11 @@
 
 .sideButton:hover {
   color: var(--color-ink);
+}
+
+.navButton.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .left { left: -60px; }
