@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import styles from './ListView.module.css';
 import CategoryTabList from './CategoryTab/CategoryTabList';
 import PressArticleContent from './PressArticle/PressArticleContent';
@@ -14,7 +14,8 @@ const ListView: React.FC = () => {
     currentPressIndex, 
     setNavigation, 
     viewMode,
-    tabMode, 
+    tabMode,
+    setTabMode,
     currentTabPageIndex, // New: Get current tab page index
     setCurrentTabPageIndex // New: Get setter for tab page index
   } = useView();
@@ -65,7 +66,7 @@ const ListView: React.FC = () => {
       // 구독 언론사가 0명이 되면 자동으로 '전체 언론사' 탭으로 이동
       setNavigation(0, 0);
       setCurrentTabPageIndex(0);
-      useView().setTabMode('all'); 
+      setTabMode('all'); 
     } else if (tabMode === 'subs' && currentPressIndex < 0 && currentDataList.length > 0) {
       setNavigation(0, 0); // 인덱스가 음수가 되는 경우 방지
     }
@@ -73,7 +74,7 @@ const ListView: React.FC = () => {
 
   const currentPress = currentDataList[currentPressIndex];
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (tabMode === 'all') {
       const isLastPressInCategory = currentPressIndex === currentDataList.length - 1;
       if (!isLastPressInCategory) {
@@ -89,9 +90,9 @@ const ListView: React.FC = () => {
         setNavigation(0, nextPressIndex);
       }
     }
-  };
+  }, [tabMode, currentPressIndex, currentDataList.length, currentCategoryIndex, setNavigation]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (tabMode === 'all') {
       if (currentPressIndex > 0) {
         setNavigation(currentCategoryIndex, currentPressIndex - 1);
@@ -107,7 +108,7 @@ const ListView: React.FC = () => {
       const prevIdx = (currentPressIndex - 1 + currentDataList.length) % currentDataList.length;
       setNavigation(0, prevIdx);
     }
-  };
+  }, [tabMode, currentPressIndex, currentCategoryIndex, setNavigation, currentDataList.length]);
 
   const isPrevDisabled = useMemo(() => {
     if (tabMode === 'all') {
@@ -128,7 +129,7 @@ const ListView: React.FC = () => {
   const { progress, reset } = useTimer({
     duration: LISTVIEW_TIMER_DURATION,
     onFinished: handleNext,
-    isActive: viewMode === 'list' && currentDataList.length > 0 && !isNextDisabled && !isPaused
+    isActive: viewMode === 'list' && currentDataList.length > 0 && !isPaused
   });
 
   // 언론사가 바뀌거나(구독/해지 포함) 네비게이션이 일어날 때 타이머를 리셋하여 자연스러운 흐름 제공

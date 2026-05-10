@@ -9,6 +9,7 @@ interface ViewContextType {
   currentCategoryIndex: number;
   currentPressIndex: number;
   currentTabPageIndex: number; // New: For pagination of subscribed tabs
+  setCurrentTabPageIndex: React.Dispatch<React.SetStateAction<number>>;
   setViewMode: (mode: ViewMode) => void;
   setTabMode: (mode: TabMode) => void;
   setNavigation: (catIdx: number, pressIdx: number) => void;
