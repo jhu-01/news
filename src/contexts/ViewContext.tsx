@@ -8,6 +8,7 @@ interface ViewContextType {
   tabMode: TabMode;
   currentCategoryIndex: number;
   currentPressIndex: number;
+  currentTabPageIndex: number; // New: For pagination of subscribed tabs
   setViewMode: (mode: ViewMode) => void;
   setTabMode: (mode: TabMode) => void;
   setNavigation: (catIdx: number, pressIdx: number) => void;
@@ -21,15 +22,29 @@ export const ViewProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [tabMode, setTabMode] = useState<TabMode>('all');
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [currentPressIndex, setCurrentPressIndex] = useState(0);
+  const [currentTabPageIndex, setCurrentTabPageIndex] = useState(0); // New state
+
+  const handleSetViewMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    resetNavigation();
+  };
+
+  const handleSetTabMode = (mode: TabMode) => {
+    setTabMode(mode);
+    resetNavigation();
+  };
 
   const setNavigation = (catIdx: number, pressIdx: number) => {
     setCurrentCategoryIndex(catIdx);
     setCurrentPressIndex(pressIdx);
+    // When navigating to a specific press, ensure its tab page is active
+    // This logic might need refinement based on TAB_PAGE_SIZE
   };
 
   const resetNavigation = () => {
     setCurrentCategoryIndex(0);
     setCurrentPressIndex(0);
+    setCurrentTabPageIndex(0); // Reset tab page index as well
   };
 
   return (
@@ -39,8 +54,10 @@ export const ViewProvider: React.FC<{ children: React.ReactNode }> = ({ children
         tabMode, 
         currentCategoryIndex,
         currentPressIndex,
-        setViewMode, 
-        setTabMode, 
+        setViewMode: handleSetViewMode, 
+        setTabMode: handleSetTabMode, 
+        currentTabPageIndex, // Provide new state
+        setCurrentTabPageIndex, // Provide new setter
         setNavigation,
         resetNavigation 
       }}

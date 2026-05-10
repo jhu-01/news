@@ -1,9 +1,8 @@
 import React from 'react';
 import styles from './CategoryTabItem.module.css';
-import { CategoryData } from '@/types/news';
 
 interface CategoryTabItemProps {
-  category: CategoryData;
+  label: string;
   isActive: boolean;
   progress: number;
   currentPressIndex?: number;
@@ -12,7 +11,7 @@ interface CategoryTabItemProps {
 }
 
 const CategoryTabItem: React.FC<CategoryTabItemProps> = ({ 
-  category, 
+  label, 
   isActive, 
   progress, 
   currentPressIndex = 1,
@@ -28,8 +27,8 @@ const CategoryTabItem: React.FC<CategoryTabItemProps> = ({
         className={styles.progressBar} 
         style={{ width: isActive ? `${progress}%` : '0%' }}
       />
-      <span className={styles.name}>{category.name}</span>
-      {isActive && (
+      <span className={styles.name}>{label}</span>
+      {isActive && totalPressCount > 0 && ( // totalPressCount가 0보다 크면 카운터 표시 (1/1도 포함)
         <span className={styles.counter}>
           <span className={styles.current}>{currentPressIndex}</span>
           <span className={styles.divider}>/</span>

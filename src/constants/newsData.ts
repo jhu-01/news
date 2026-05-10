@@ -1,55 +1,68 @@
-import { CategoryData } from '@/types/news';
+import { CategoryData, PressNewsData } from '@/types/news';
+import { PRESS_LIST } from './pressData';
 
 export const LISTVIEW_TIMER_DURATION = 6000; // 6초
 
-export const CATEGORIES: CategoryData[] = [
-  {
-    id: 'total',
-    name: '종합',
-    pressList: [
-      {
-        name: '연합뉴스',
-        color: '#14212B',
-        weight: 'bold',
-        lastEditTime: '2024.05.10. 10:00',
-        mainArticle: {
-          title: "구글, 역대 최대 성능 '제미나이 1.5 프로' 공개... 100만 토큰 처리",
-          thumbnail: "",
-          link: "#"
-        },
-        subArticles: [
-          { title: "긴 문맥 이해 능력 비약적 향상... 영상·음성 분석도 가능", link: "#" },
-          { title: "개발자 위한 API 출시... 구글 클라우드와 연동 강화", link: "#" },
-          { title: "멀티모달 성능 벤치마크 압도적 1위 기록", link: "#" },
-          { title: "제미나이 나노, 모바일 기기 탑재 가속화", link: "#" },
-          { title: "구글, 'AI 에이전트' 시대로의 대전환 선언", link: "#" },
-          { title: "연합뉴스 바로가기", link: "#" }
-        ]
-      },
-      {
-        name: '조선일보',
-        color: '#000000',
-        fontFamily: 'serif',
-        weight: 'bold',
-        lastEditTime: '2024.05.10. 11:20',
-        mainArticle: {
-          title: "AI가 코딩하는 시대... '제미나이 코드 어시스트' 개발 효율 2배 높인다",
-          thumbnail: "",
-          link: "#"
-        },
-        subArticles: [
-          { title: "코드 자동 완성부터 리팩토링까지... 개발자의 'AI 부사수'", link: "#" },
-          { title: "기존 코드베이스 분석해 버그 수정 제안... 생산성 극대화", link: "#" },
-          { title: "기업용 보안 강화된 제미나이 엔터프라이즈 버전 출시", link: "#" },
-          { title: "전 세계 개발자 80% 'AI 코딩 도구 도입 긍정적'", link: "#" },
-          { title: "조선일보 바로가기", link: "#" }
-        ]
-      }
-    ]
+/**
+ * 각 언론사에 맞는 가짜 뉴스 데이터를 생성하는 헬퍼 함수
+ */
+const createMockNews = (press: typeof PRESS_LIST[0]): PressNewsData => ({
+  ...press,
+  lastEditTime: '2024.05.10. 14:00',
+  mainArticle: {
+    title: `${press.name}이 주목한 제미나이 AI의 미래 기술 혁신`,
+    thumbnail: "",
+    link: "#"
   },
+  subArticles: [
+    { title: `${press.name} 단독: AI 에이전트 도입으로 생산성 3배 향상`, link: "#" },
+    { title: "구글 클라우드, 차세대 제미나이 엔진 통합 발표", link: "#" },
+    { title: "멀티모달 AI가 바꾸는 일상... 이제는 음성으로 대화한다", link: "#" },
+    { title: "글로벌 IT 리더들이 말하는 AI 보안의 중요성", link: "#" },
+    { title: "제미나이 나노, 안드로이드 생태계의 새로운 도약", link: "#" },
+    { title: `${press.name} 바로가기`, link: "#" }
+  ]
+});
+
+/**
+ * PRESS_LIST를 기반으로 6개 카테고리에 데이터를 자동 분배
+ */
+export const CATEGORIES: CategoryData[] = [
+  { id: 'total', name: '종합', pressList: [] },
   { id: 'broadcast', name: '방송/IT', pressList: [] },
   { id: 'economy', name: '경제', pressList: [] },
   { id: 'news', name: '인터넷/신문', pressList: [] },
   { id: 'sports', name: '스포츠/연예', pressList: [] },
   { id: 'magazine', name: '매거진/전문지', pressList: [] }
-];
+].map(category => {
+  const filteredPresses = PRESS_LIST.filter(press => {
+    switch (category.id) {
+      case 'economy':
+        return press.flag === '경제';
+      case 'broadcast':
+        return press.flag === 'IT' || press.name.includes('TV') || ['MBC', 'KBS', 'SBS', 'JTBC', 'YTN'].includes(press.name);
+      case 'sports':
+        return press.name.includes('스포츠') || press.name === 'OSEN' || press.name === '스타뉴스';
+      case 'magazine':
+        return press.name.includes('코리아') || press.name.includes('매거진') || ['포브스', '더블유', '보그', '엘르'].some(n => press.name.includes(n));
+      case 'news':
+        return press.fontFamily === 'serif' || press.name.includes('신문');
+      case 'total':
+        // 다른 카테고리에 속하지 않는 경우 종합으로 분류
+        return (
+          !press.flag && 
+          !press.name.includes('스포츠') && 
+          !press.name.includes('코리아') && 
+          !press.name.includes('신문') &&
+          !['한겨레', '아시아경제'].includes(press.name)
+        );
+      default:
+        return false;
+    }
+  });
+
+  return {
+    ...category,
+    pressList: filteredPresses.map(createMockNews)
+  };
+});

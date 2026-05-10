@@ -1,52 +1,168 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import styles from './ListView.module.css';
 import CategoryTabList from './CategoryTab/CategoryTabList';
 import PressArticleContent from './PressArticle/PressArticleContent';
 import { useView } from '@/contexts/ViewContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { CATEGORIES, LISTVIEW_TIMER_DURATION } from '@/constants/newsData';
 import { useTimer } from '@/hooks/useTimer';
 
 const ListView: React.FC = () => {
-  const { currentCategoryIndex, currentPressIndex, setNavigation, viewMode } = useView();
+  const { 
+    currentCategoryIndex, 
+    currentPressIndex, 
+    setNavigation, 
+    viewMode,
+    tabMode, 
+    currentTabPageIndex, // New: Get current tab page index
+    setCurrentTabPageIndex // New: Get setter for tab page index
+  } = useView();
+  const { subscribedIds } = useSubscription();
 
-  const currentCategory = CATEGORIES[currentCategoryIndex];
-  const currentPress = currentCategory.pressList[currentPressIndex];
+  // 전체 언론사 데이터를 평탄화하고 중복된 언론사를 제거함
+  const allPressData = useMemo(() => {
+    const flattened = CATEGORIES.flatMap(cat => cat.pressList);
+    const seen = new Set<string>();
+    return flattened.filter(press => {
+      if (seen.has(press.name)) return false;
+      seen.add(press.name);
+      return true;
+    });
+  }, []);
+
+  const subscribedPressList = useMemo(() => 
+    allPressData.filter(press => subscribedIds.includes(press.name)), 
+  [allPressData, subscribedIds]);
+
+  const TAB_PAGE_SIZE = 6;
+
+  // Determine which list of presses to use based on tabMode
+  const currentDataList = useMemo(() => {
+    if (tabMode === 'all') {
+      return CATEGORIES[currentCategoryIndex]?.pressList || [];
+    } else { // tabMode === 'subs'
+      return subscribedPressList;
+    }
+  }, [tabMode, currentCategoryIndex, subscribedPressList]);
+
+  // 기사 인덱스가 변경될 때 탭 페이지 자동 동기화
+  useEffect(() => {
+    if (tabMode === 'subs') {
+      const newTabPage = Math.floor(currentPressIndex / TAB_PAGE_SIZE);
+      if (newTabPage !== currentTabPageIndex) {
+        setCurrentTabPageIndex(newTabPage);
+      }
+    }
+  }, [currentPressIndex, tabMode, setCurrentTabPageIndex, currentTabPageIndex]);
+
+  // 구독 해지 등으로 인해 현재 인덱스가 범위를 벗어날 경우 안전하게 리셋
+  useEffect(() => {
+    if (tabMode === 'subs' && currentPressIndex >= currentDataList.length && currentDataList.length > 0) {
+      setNavigation(0, currentDataList.length - 1);
+    } else if (tabMode === 'subs' && currentDataList.length === 0) {
+      // 구독 언론사가 없는데 subs 모드일 경우, 인덱스 초기화
+      setNavigation(0, 0);
+      setCurrentTabPageIndex(0);
+    } else if (tabMode === 'subs' && currentPressIndex < 0 && currentDataList.length > 0) {
+      setNavigation(0, 0); // 인덱스가 음수가 되는 경우 방지
+    }
+  }, [currentDataList.length, currentPressIndex, tabMode, setNavigation, setCurrentTabPageIndex]);
+
+  const currentPress = currentDataList[currentPressIndex];
 
   const handleNext = () => {
-    const isLastPressInCategory = currentPressIndex === currentCategory.pressList.length - 1;
-    
-    if (!isLastPressInCategory) {
-      setNavigation(currentCategoryIndex, currentPressIndex + 1);
+    if (tabMode === 'all') {
+      const isLastPressInCategory = currentPressIndex === currentDataList.length - 1;
+      if (!isLastPressInCategory) {
+        setNavigation(currentCategoryIndex, currentPressIndex + 1);
+      } else {
+        const nextCategoryIndex = (currentCategoryIndex + 1) % CATEGORIES.length;
+        setNavigation(nextCategoryIndex, 0);
+      }
     } else {
-      // 다음 카테고리로 이동
-      const nextCategoryIndex = (currentCategoryIndex + 1) % CATEGORIES.length;
-      setNavigation(nextCategoryIndex, 0);
+      // 구독 언론사 순환
+      if (currentDataList.length > 0) {
+        const nextPressIndex = (currentPressIndex + 1) % currentDataList.length;
+        setNavigation(0, nextPressIndex);
+      }
     }
   };
 
-  const { progress } = useTimer({
+  const handlePrev = () => {
+    if (tabMode === 'all') {
+      if (currentPressIndex > 0) {
+        setNavigation(currentCategoryIndex, currentPressIndex - 1);
+      } else {
+        let prevCatIdx = (currentCategoryIndex - 1 + CATEGORIES.length) % CATEGORIES.length;
+        // 데이터가 있는 카테고리를 찾을 때까지 역행
+        while (CATEGORIES[prevCatIdx].pressList.length === 0 && prevCatIdx !== currentCategoryIndex) {
+          prevCatIdx = (prevCatIdx - 1 + CATEGORIES.length) % CATEGORIES.length;
+        }
+        setNavigation(prevCatIdx, Math.max(0, CATEGORIES[prevCatIdx].pressList.length - 1));
+      }
+    } else if (currentDataList.length > 0) {
+      const prevIdx = (currentPressIndex - 1 + currentDataList.length) % currentDataList.length;
+      setNavigation(0, prevIdx);
+    }
+  };
+
+  const { progress, reset } = useTimer({
     duration: LISTVIEW_TIMER_DURATION,
     onFinished: handleNext,
-    isActive: viewMode === 'list'
+    isActive: viewMode === 'list' && currentDataList.length > 0
   });
 
+  // 언론사가 바뀌거나(구독/해지 포함) 네비게이션이 일어날 때 타이머를 리셋하여 자연스러운 흐름 제공
+  useEffect(() => {
+    reset();
+  }, [currentPress, reset]);
+
   return (
-    <div className={styles.listViewContainer}>
-      <nav className={styles.categoryNav}>
-        <CategoryTabList 
-          activeIndex={currentCategoryIndex} 
-          progress={progress} 
-          currentPressIndex={currentPressIndex + 1}
-        />
-      </nav>
-      
-      <article className={styles.contentArea}>
-        {currentPress ? (
-          <PressArticleContent data={currentPress} />
-        ) : (
-          <div className={styles.empty}>해당 카테고리에 편성된 뉴스가 없습니다.</div>
-        )}
-      </article>
+    <div className={styles.wrapper}>
+      <button 
+        className={`${styles.sideButton} ${styles.left}`} 
+        onClick={handlePrev}
+        aria-label="이전 페이지"
+      >
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 28L16 20L24 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="20" cy="20" r="19.5" stroke="var(--color-line)"/>
+        </svg>
+      </button>
+
+      <div className={styles.listViewContainer}>
+        <nav className={styles.categoryNav}>
+          <CategoryTabList 
+            activeIndex={currentCategoryIndex} 
+            progress={progress} 
+            currentPressIndex={currentPressIndex + 1}
+            currentTabPageIndex={currentTabPageIndex}
+            tabPageSize={TAB_PAGE_SIZE}
+            currentDataList={currentDataList}
+          />
+        </nav>
+        
+        <article className={styles.contentArea}>
+          {tabMode === 'subs' && subscribedPressList.length === 0 ? (
+            <div className={styles.empty}>구독한 언론사가 없습니다.</div>
+          ) : currentPress ? (
+            <PressArticleContent data={currentPress} />
+          ) : (
+            <div className={styles.empty}>해당 카테고리에 편성된 뉴스가 없습니다.</div>
+          )}
+        </article>
+      </div>
+
+      <button 
+        className={`${styles.sideButton} ${styles.right}`} 
+        onClick={handleNext}
+        aria-label="다음 페이지"
+      >
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 28L24 20L16 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="20" cy="20" r="19.5" stroke="var(--color-line)"/>
+        </svg>
+      </button>
     </div>
   );
 };

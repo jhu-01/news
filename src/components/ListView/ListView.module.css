@@ -1,3 +1,30 @@
+.wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.sideButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-mute);
+  cursor: pointer;
+  padding: var(--space-8);
+  z-index: 10;
+}
+
+.sideButton:hover {
+  color: var(--color-ink);
+}
+
+.left { left: -60px; }
+.right { right: -60px; }
+
 .listViewContainer {
   background-color: var(--color-card);
   border: 1px solid var(--color-line);
